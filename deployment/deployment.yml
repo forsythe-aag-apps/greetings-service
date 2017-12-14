@@ -1,17 +1,17 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: hello-world-service
+  name: greetings-service
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        app: hello-world-service
+        app: greetings-service
     spec:
       containers:
-        - name: hello-world-service
-          image: quay.io/zotovsa/hello-world-service
+        - name: greetings-service
+          image: quay.io/zotovsa/greetings-service
           ports:
             - containerPort: 8080
               name: http
