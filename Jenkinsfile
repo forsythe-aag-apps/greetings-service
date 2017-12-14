@@ -53,16 +53,16 @@ podTemplate(label: 'mypod', containers: [
         
         container('docker') {
             stage('Docker build') {
-                sh 'docker build -t hello-world-service .'
-                sh 'docker tag hello-world-service quay.io/zotovsa/hello-world-service'
-                sh 'docker push quay.io/zotovsa/hello-world-service'
+                sh 'docker build -t greetings-service .'
+                sh 'docker tag greetings-service quay.io/zotovsa/greetings-service'
+                sh 'docker push quay.io/zotovsa/greetings-service'
             }
         }
 
         container('kubectl') {
             stage('Deploy MicroService') {
-               sh "kubectl delete deployment hello-world-service -n ${projectNamespace} --ignore-not-found=true"
-               sh "kubectl delete service hello-world-service -n ${projectNamespace} --ignore-not-found=true"
+               sh "kubectl delete deployment greetings-service -n ${projectNamespace} --ignore-not-found=true"
+               sh "kubectl delete service greetings-service -n ${projectNamespace} --ignore-not-found=true"
                sh "kubectl create -f ./deployment/deployment.yml -n ${projectNamespace}"
                sh "kubectl create -f ./deployment/service.yml -n ${projectNamespace}"
                waitForRunningState(projectNamespace)
@@ -71,21 +71,21 @@ podTemplate(label: 'mypod', containers: [
         
         container('kubectl') {
             timeout(time: 3, unit: 'MINUTES') {
-                printEndpoint(namespace: projectNamespace, serviceId: "hello-world-service",
-                    serviceName: "Hello World Service", port: "8080")
+                printEndpoint(namespace: projectNamespace, serviceId: "greetings-service",
+                    serviceName: "Greetings Service", port: "8080")
                 input message: "Deploy to Production?"
             }
         }
 
         container('kubectl') {
            sh "kubectl create namespace prod-${projectNamespace} || true"
-           sh "kubectl delete deployment hello-world-service -n prod-${projectNamespace} --ignore-not-found=true"
-           sh "kubectl delete service hello-world-service -n prod-${projectNamespace} --ignore-not-found=true"
+           sh "kubectl delete deployment greetings-service -n prod-${projectNamespace} --ignore-not-found=true"
+           sh "kubectl delete service greetings-service -n prod-${projectNamespace} --ignore-not-found=true"
            sh "kubectl create -f ./deployment/deployment.yml -n prod-${projectNamespace}"
            sh "kubectl create -f ./deployment/service.yml -n prod-${projectNamespace}"
            waitForRunningState("prod-${projectNamespace}")
-           printEndpoint(namespace: "prod-${projectNamespace}", serviceId: "hello-world-service",
-                               serviceName: "Hello World Service", port: "8080")
+           printEndpoint(namespace: "prod-${projectNamespace}", serviceId: "greetings-service",
+                               serviceName: "Greetings Service", port: "8080")
         }
     }
 }
