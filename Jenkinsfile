@@ -22,6 +22,7 @@ podTemplate(label: 'mypod', containers: [
         checkout scm
         def jobName = "${env.JOB_NAME}".tokenize('/').last()
         def projectNamespace = "${env.JOB_NAME}".tokenize('/')[0]
+
         def pullRequest = false
         if (jobName.startsWith("PR-")) {
             pullRequest = true
