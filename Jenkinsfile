@@ -20,12 +20,18 @@ podTemplate(label: 'mypod', containers: [
 
     node('mypod') {
         checkout scm
+        def jobName = "${env.JOB_NAME}".tokenize('/').last()
         def projectNamespace = "${env.JOB_NAME}".tokenize('/')[0]
-        echo "Job Name: ${env.JOB_NAME}"
+        def pullRequest = false
+        if (jobName.startsWith("PR-")) {
+            pullRequest = true
+        }
 
-        container('kubectl') {
-            stage('Configure Kubernetes') {
-                createNamespace(projectNamespace)
+        if (!pullRequest) {
+            container('kubectl') {
+                stage('Configure Kubernetes') {
+                    createNamespace(projectNamespace)
+                }
             }
         }
 
@@ -46,47 +52,51 @@ podTemplate(label: 'mypod', containers: [
                 sonarQubeScanner(){}
             }
 
-            stage('Deploy project to Nexus') {
-                sh 'mvn -DskipTests=true package deploy'
-                archiveArtifacts artifacts: 'target/*.jar'
-            }
-        }
-        
-        container('docker') {
-            stage('Docker build') {
-                sh 'docker build -t greetings-service .'
-                sh 'docker tag greetings-service quay.io/zotovsa/greetings-service'
-                sh 'docker push quay.io/zotovsa/greetings-service'
+            if (!pullRequest) {
+                stage('Deploy project to Nexus') {
+                    sh 'mvn -DskipTests=true package deploy'
+                    archiveArtifacts artifacts: 'target/*.jar'
+                }
             }
         }
 
-        container('kubectl') {
-            stage('Deploy MicroService') {
-               sh "kubectl delete deployment greetings-service -n ${projectNamespace} --ignore-not-found=true"
-               sh "kubectl delete service greetings-service -n ${projectNamespace} --ignore-not-found=true"
-               sh "kubectl create -f ./deployment/deployment.yml -n ${projectNamespace}"
-               sh "kubectl create -f ./deployment/service.yml -n ${projectNamespace}"
-               waitForRunningState(projectNamespace)
+        if (!pullRequest) {
+            container('docker') {
+                stage('Docker build') {
+                    sh 'docker build -t greetings-service .'
+                    sh 'docker tag greetings-service quay.io/zotovsa/greetings-service'
+                    sh 'docker push quay.io/zotovsa/greetings-service'
+                }
             }
-        }
-        
-        container('kubectl') {
-            timeout(time: 3, unit: 'MINUTES') {
-                printEndpoint(namespace: projectNamespace, serviceId: "greetings-service",
-                    serviceName: "Greetings Service", port: "8080")
-                input message: "Deploy to Production?"
-            }
-        }
 
-        container('kubectl') {
-           sh "kubectl create namespace prod-${projectNamespace} || true"
-           sh "kubectl delete deployment greetings-service -n prod-${projectNamespace} --ignore-not-found=true"
-           sh "kubectl delete service greetings-service -n prod-${projectNamespace} --ignore-not-found=true"
-           sh "kubectl create -f ./deployment/deployment.yml -n prod-${projectNamespace}"
-           sh "kubectl create -f ./deployment/service.yml -n prod-${projectNamespace}"
-           waitForRunningState("prod-${projectNamespace}")
-           printEndpoint(namespace: "prod-${projectNamespace}", serviceId: "greetings-service",
-                               serviceName: "Greetings Service", port: "8080")
+            container('kubectl') {
+                stage('Deploy MicroService') {
+                   sh "kubectl delete deployment greetings-service -n ${projectNamespace} --ignore-not-found=true"
+                   sh "kubectl delete service greetings-service -n ${projectNamespace} --ignore-not-found=true"
+                   sh "kubectl create -f ./deployment/deployment.yml -n ${projectNamespace}"
+                   sh "kubectl create -f ./deployment/service.yml -n ${projectNamespace}"
+                   waitForRunningState(projectNamespace)
+                }
+            }
+
+            container('kubectl') {
+                timeout(time: 3, unit: 'MINUTES') {
+                    printEndpoint(namespace: projectNamespace, serviceId: "greetings-service",
+                        serviceName: "Greetings Service", port: "8080")
+                    input message: "Deploy to Production?"
+                }
+            }
+
+            container('kubectl') {
+               sh "kubectl create namespace prod-${projectNamespace} || true"
+               sh "kubectl delete deployment greetings-service -n prod-${projectNamespace} --ignore-not-found=true"
+               sh "kubectl delete service greetings-service -n prod-${projectNamespace} --ignore-not-found=true"
+               sh "kubectl create -f ./deployment/deployment.yml -n prod-${projectNamespace}"
+               sh "kubectl create -f ./deployment/service.yml -n prod-${projectNamespace}"
+               waitForRunningState("prod-${projectNamespace}")
+               printEndpoint(namespace: "prod-${projectNamespace}", serviceId: "greetings-service",
+                                   serviceName: "Greetings Service", port: "8080")
+            }
         }
     }
 }
