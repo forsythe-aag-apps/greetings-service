@@ -23,7 +23,7 @@ podTemplate(label: 'mypod', containers: [
         def jobName = "${env.JOB_NAME}".tokenize('/').last()
         def projectNamespace = "${env.JOB_NAME}".tokenize('/')[0]
 
-        withCredentials([usernamePassword(credentialsId: 'github-token', variable: 'GITHUB_ACCESS_TOKEN')]) {
+        withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'github-token', usernameVariable: 'USERNAME', passwordVariable: 'GITHUB_ACCESS_TOKEN']]) {
           sh 'env'
         }
 
