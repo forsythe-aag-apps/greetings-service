@@ -26,7 +26,6 @@ podTemplate(label: 'mypod', containers: [
 
         withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'github-token', usernameVariable: 'USERNAME', passwordVariable: 'GITHUB_ACCESS_TOKEN']]) {
           accessToken = sh(returnStdout: true, script: 'echo $GITHUB_ACCESS_TOKEN').trim()
-          print "ACCESS TOKEN: ${accessToken}"
         }
 
         def pullRequest = false
@@ -59,7 +58,7 @@ podTemplate(label: 'mypod', containers: [
                 if (!pullRequest) {
                     sonarQubeScanner(){}
                 } else {
-                    sonarQubePRScanner(accessToken)
+                    sonarQubePRScanner(accessToken, 'forsythe-aag-apps/greetings-service')
                 }
             }
 
