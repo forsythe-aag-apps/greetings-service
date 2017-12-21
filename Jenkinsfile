@@ -22,6 +22,12 @@ podTemplate(label: 'mypod', containers: [
         checkout scm
         def jobName = "${env.JOB_NAME}".tokenize('/').last()
         def projectNamespace = "${env.JOB_NAME}".tokenize('/')[0]
+        def accessToken = ""
+
+        withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'github-token', usernameVariable: 'USERNAME', passwordVariable: 'GITHUB_ACCESS_TOKEN']]) {
+          accessToken = sh(returnStdout: true, script: 'echo $GITHUB_ACCESS_TOKEN').trim()
+          print "ACCESS TOKEN: ${accessToken}"
+        }
 
         def pullRequest = false
         if (jobName.startsWith("PR-")) {
@@ -53,10 +59,7 @@ podTemplate(label: 'mypod', containers: [
                 if (!pullRequest) {
                     sonarQubeScanner(){}
                 } else {
-                    withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'github-token', usernameVariable: 'USERNAME', passwordVariable: 'GITHUB_ACCESS_TOKEN']]) {
-                      sh 'env'
-                      sonarQubePRScanner(){}
-                    }
+                    sonarQubePRScanner(accessToken)
                 }
             }
 
