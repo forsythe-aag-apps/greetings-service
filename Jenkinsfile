@@ -54,7 +54,11 @@ podTemplate(label: 'mypod', containers: [
             }
 
             stage('SonarQube Analysis') {
-                sonarQubeScanner(){}
+                if (!pullRequest) {
+                    sonarQubeScanner(){}
+                } else {
+                    sonarQubePRScanner(){}
+                }
             }
 
             if (!pullRequest) {
