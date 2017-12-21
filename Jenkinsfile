@@ -23,6 +23,10 @@ podTemplate(label: 'mypod', containers: [
         def jobName = "${env.JOB_NAME}".tokenize('/').last()
         def projectNamespace = "${env.JOB_NAME}".tokenize('/')[0]
 
+        withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'github-token', usernameVariable: 'USERNAME', passwordVariable: 'GITHUB_ACCESS_TOKEN']]) {
+          sh 'env'
+        }
+
         def pullRequest = false
         if (jobName.startsWith("PR-")) {
             pullRequest = true
@@ -50,7 +54,11 @@ podTemplate(label: 'mypod', containers: [
             }
 
             stage('SonarQube Analysis') {
-                sonarQubeScanner(){}
+                if (!pullRequest) {
+                    sonarQubeScanner(){}
+                } else {
+                    sonarQubePRScanner(){}
+                }
             }
 
             if (!pullRequest) {
