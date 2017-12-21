@@ -24,7 +24,7 @@ podTemplate(label: 'mypod', containers: [
         def projectNamespace = "${env.JOB_NAME}".tokenize('/')[0]
 
         environment {
-            GITHUB_ACCESS_TOKEN=credentials('github-access-token')
+            GITHUB_ACCESS_TOKEN=credentials('github-token')
         }
 
         sh 'env'
