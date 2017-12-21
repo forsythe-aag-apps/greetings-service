@@ -23,11 +23,9 @@ podTemplate(label: 'mypod', containers: [
         def jobName = "${env.JOB_NAME}".tokenize('/').last()
         def projectNamespace = "${env.JOB_NAME}".tokenize('/')[0]
 
-        environment {
-            GITHUB_ACCESS_TOKEN=credentials('github-token')
+        withCredentials([usernamePassword(credentialsId: 'github-token', passwordVariable: 'GITHUB_ACCESS_TOKEN')]) {
+          sh 'env'
         }
-
-        sh 'env'
 
         def pullRequest = false
         if (jobName.startsWith("PR-")) {
