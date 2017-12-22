@@ -41,31 +41,33 @@ podTemplate(label: 'mypod', containers: [
             }
         }
 
-        container('maven') {
-            stage('Build a project') {
-                sh 'mvn clean install -DskipTests=true'
-            }
-
-            stage('Run tests') {
-                try {
-                    sh 'mvn clean install test'
-                } finally {
-                    junit 'target/surefire-reports/*.xml'
+        lock('maven-build') {
+            container('maven') {
+                stage('Build a project') {
+                    sh 'mvn clean install -DskipTests=true'
                 }
-            }
 
-            stage('SonarQube Analysis') {
+                stage('Run tests') {
+                    try {
+                        sh 'mvn clean install test'
+                    } finally {
+                        junit 'target/surefire-reports/*.xml'
+                    }
+                }
+
+                stage('SonarQube Analysis') {
+                    if (!pullRequest) {
+                        sonarQubeScanner(){}
+                    } else {
+                        sonarQubePRScanner(accessToken, 'forsythe-aag-apps/greetings-service')
+                    }
+                }
+
                 if (!pullRequest) {
-                    sonarQubeScanner(){}
-                } else {
-                    sonarQubePRScanner(accessToken, 'forsythe-aag-apps/greetings-service')
-                }
-            }
-
-            if (!pullRequest) {
-                stage('Deploy project to Nexus') {
-                    sh 'mvn -DskipTests=true package deploy'
-                    archiveArtifacts artifacts: 'target/*.jar'
+                    stage('Deploy project to Nexus') {
+                        sh 'mvn -DskipTests=true package deploy'
+                        archiveArtifacts artifacts: 'target/*.jar'
+                    }
                 }
             }
         }
