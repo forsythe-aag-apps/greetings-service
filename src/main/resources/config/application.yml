@@ -1,0 +1,5 @@
+debug: true
+server:
+  contextPath: /greetings
+  port: 9000
+  max-http-header-size: 65535

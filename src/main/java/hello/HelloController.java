@@ -3,12 +3,14 @@ package hello;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import javax.servlet.http.HttpServletRequest;
+
 @RestController
 public class HelloController implements Comparable {
-    public static String foo = "";
+    public static String FOO_VAR = "";
 
     @RequestMapping("/")
-    public String index() {
+    public String index(HttpServletRequest request) {
         return "Greetings from Spring Boot!";
     }
 
