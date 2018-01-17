@@ -88,6 +88,7 @@ podTemplate(label: 'mypod', containers: [
                    sh "kubectl delete service greetings-service -n ${projectNamespace} --ignore-not-found=true"
                    sh "kubectl create -f ./deployment/deployment.yml -n ${projectNamespace}"
                    sh "kubectl create -f ./deployment/service.yml -n ${projectNamespace}"
+                   sh "kubectl create -f ./deployment/prometheus-service-monitor.yml -n cicd-tools"
                    waitForRunningState(projectNamespace)
                 }
             }
