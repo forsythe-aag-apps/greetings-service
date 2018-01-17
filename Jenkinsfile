@@ -22,8 +22,7 @@ podTemplate(label: 'mypod', containers: [
         checkout scm
         def jobName = "${env.JOB_NAME}".tokenize('/').last()
         def projectNamespace = "${env.JOB_NAME}".tokenize('/')[0]
-        def gitOrganization = System.getenv("GIT_ORGANIZATON")
-        print gitOrganization
+        def ingressAddress = System.getenv("INGRESS_CONTROLLER_IP")
         def accessToken = ""
 
         withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'github-token', usernameVariable: 'USERNAME', passwordVariable: 'GITHUB_ACCESS_TOKEN']]) {
@@ -59,9 +58,9 @@ podTemplate(label: 'mypod', containers: [
 
                 stage('SonarQube Analysis') {
                     if (!pullRequest) {
-                        sonarQubeScanner(){}
+                        sonarQubeScanner(accessToken, 'forsythe-aag-apps/greetings-service', "http://sonarqube.${ingressAddress}.xip.io"){}
                     } else {
-                        sonarQubePRScanner(accessToken, 'forsythe-aag-apps/greetings-service')
+                        sonarQubePRScanner(accessToken, 'forsythe-aag-apps/greetings-service', "http://sonarqube.${ingressAddress}.xip.io")
                     }
                 }
 
