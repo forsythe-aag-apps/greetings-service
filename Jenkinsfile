@@ -22,6 +22,8 @@ podTemplate(label: 'mypod', containers: [
         checkout scm
         def jobName = "${env.JOB_NAME}".tokenize('/').last()
         def projectNamespace = "${env.JOB_NAME}".tokenize('/')[0]
+        def gitOrganization = System.getenv("GIT_ORGANIZATON")
+        print gitOrganization
         def accessToken = ""
 
         withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'github-token', usernameVariable: 'USERNAME', passwordVariable: 'GITHUB_ACCESS_TOKEN']]) {
