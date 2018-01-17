@@ -58,9 +58,9 @@ podTemplate(label: 'mypod', containers: [
 
                 stage('SonarQube Analysis') {
                     if (!pullRequest) {
-                        sonarQubeScanner(accessToken, 'forsythe-aag-apps/greetings-service', "http://sonarqube.${ingressAddress}.xip.io"){}
+                        sonarQubeScanner(accessToken, 'forsythe-aag-apps/greetings-service', "http://sonarqube.35.192.52.128.xip.io")
                     } else {
-                        sonarQubePRScanner(accessToken, 'forsythe-aag-apps/greetings-service', "http://sonarqube.${ingressAddress}.xip.io")
+                        sonarQubePRScanner(accessToken, 'forsythe-aag-apps/greetings-service', "http://sonarqube.35.192.52.128.xip.io")
                     }
                 }
 
