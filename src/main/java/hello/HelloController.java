@@ -1,16 +1,28 @@
 package hello;
 
-import io.micrometer.core.annotation.Timed;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import javax.servlet.http.HttpServletRequest;
 
 @RestController
-@Timed
-public class HelloController {
-    
+public class HelloController implements Comparable {
+    public static String FOO_VAR = "";
+
     @RequestMapping("/")
-    @Timed
-    public String index() {
+    public String index(HttpServletRequest request) {
         return "Greetings from Spring Boot!";
+    }
+
+    public Object clone() {
+        return null;
+    }
+
+    public int compareTo(Object value) {
+        if (value == null) {
+            return Integer.MIN_VALUE;
+        }
+
+        return 0;
     }
 }
