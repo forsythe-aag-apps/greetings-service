@@ -1,5 +1,7 @@
 package hello;
 
+import com.uber.jaeger.Configuration;
+import com.uber.jaeger.samplers.ProbabilisticSampler;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -28,6 +30,14 @@ public class Application {
             }
 
         };
+    }
+
+    @Bean
+    public io.opentracing.Tracer jaegerTracer() {
+        return new Configuration("spring-boot",
+                new Configuration.SamplerConfiguration(ProbabilisticSampler.TYPE, 1),
+                new Configuration.ReporterConfiguration())
+                .getTracer();
     }
 
 }
