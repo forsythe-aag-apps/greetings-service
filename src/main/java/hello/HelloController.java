@@ -20,12 +20,14 @@ public class HelloController {
     @Autowired
     Environment environment;
 
+    @Autowired
+    private RestTemplate restTemplate;
+
     @Timed
     @RequestMapping("/")
     public String index() {
-        RestTemplate template = new RestTemplate();
         String port = environment.getProperty("local.server.port");
-        String name = template.getForObject(String.format("http://localhost:%s/user", port), String.class);
+        String name = restTemplate.getForObject(String.format("http://localhost:%s/user", port), String.class);
         return MessageFormat.format(indexTemplate, name);
     }
 
