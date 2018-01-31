@@ -5,3 +5,6 @@ server:
 management:
   security:
     enabled: false
+
+templates:
+  index: "<html><body><h1 style=\"width: 100%; text-align: center;\">Greetings Micro Service</h1><br><h3 style=\"width: 100%; text-align: center;\">Greetings from {0}!</h3></body></html>"
