@@ -87,17 +87,18 @@ podTemplate(label: 'mypod', containers: [
                    sh "kubectl delete deployment greetings-service -n ${projectNamespace} --ignore-not-found=true"
                    sh "kubectl delete service greetings-service -n ${projectNamespace} --ignore-not-found=true"
                    sh "kubectl delete -f ./deployment/prometheus-service-monitor.yml -n cicd-tools --ignore-not-found=true"
+                   sh "kubectl delete -f ./deployment/ingress.yml -n ${projectNamespace} --ignore-not-found=true"
                    sh "kubectl create -f ./deployment/deployment.yml -n ${projectNamespace}"
                    sh "kubectl create -f ./deployment/service.yml -n ${projectNamespace}"
                    sh "kubectl create -f ./deployment/prometheus-service-monitor.yml -n cicd-tools"
+                   sh "kubectl create -f ./deployment/ingress.yml -n prod-${projectNamespace}"
                    waitForRunningState(projectNamespace)
+                   print "Greetings Service can be accessed at: http://greeting-service.${ingressAddress}.xip.io"
                 }
             }
 
             container('kubectl') {
                 timeout(time: 3, unit: 'MINUTES') {
-                    printEndpoint(namespace: projectNamespace, serviceId: "greetings-service",
-                        serviceName: "Greetings Service", port: "8080")
                     input message: "Deploy to Production?"
                 }
             }
@@ -106,8 +107,11 @@ podTemplate(label: 'mypod', containers: [
                sh "kubectl create namespace prod-${projectNamespace} || true"
                sh "kubectl delete deployment greetings-service -n prod-${projectNamespace} --ignore-not-found=true"
                sh "kubectl delete service greetings-service -n prod-${projectNamespace} --ignore-not-found=true"
+               sh "kubectl delete -f ./deployment/ingress.yml -n prod-${projectNamespace} --ignore-not-found=true"
                sh "kubectl create -f ./deployment/deployment.yml -n prod-${projectNamespace}"
                sh "kubectl create -f ./deployment/service.yml -n prod-${projectNamespace}"
+               sh "kubectl create -f ./deployment/ingress.yml -n prod-${projectNamespace}"
+
                waitForRunningState("prod-${projectNamespace}")
                printEndpoint(namespace: "prod-${projectNamespace}", serviceId: "greetings-service",
                                    serviceName: "Greetings Service", port: "8080")
