@@ -91,7 +91,7 @@ podTemplate(label: 'mypod', containers: [
                    sh "kubectl create -f ./deployment/deployment.yml -n ${projectNamespace}"
                    sh "kubectl create -f ./deployment/service.yml -n ${projectNamespace}"
                    sh "kubectl create -f ./deployment/prometheus-service-monitor.yml -n cicd-tools"
-                   sh "kubectl create -f ./deployment/ingress.yml -n prod-${projectNamespace}"
+                   sh "kubectl create -f ./deployment/ingress.yml -n ${projectNamespace}"
                    waitForRunningState(projectNamespace)
                    print "Greetings Service can be accessed at: http://greeting-service.${ingressAddress}.xip.io"
                 }
