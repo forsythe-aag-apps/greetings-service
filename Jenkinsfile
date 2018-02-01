@@ -87,11 +87,13 @@ podTemplate(label: 'mypod', containers: [
                    sh "kubectl delete deployment greetings-service -n ${projectNamespace} --ignore-not-found=true"
                    sh "kubectl delete service greetings-service -n ${projectNamespace} --ignore-not-found=true"
                    sh "kubectl delete -f ./deployment/prometheus-service-monitor.yml -n cicd-tools --ignore-not-found=true"
-                   sh "kubectl delete -f ./deployment/ingress.yml -n ${projectNamespace} --ignore-not-found=true"
+
+                   sed -e 's/{{INGRESSIP}}/'${ingressAddress}'/g' ./deployment/ingress2.yaml > ./deployment/ingress2.yaml
+                   sh "kubectl delete -f ./deployment/ingress2.yml -n ${projectNamespace} --ignore-not-found=true"
                    sh "kubectl create -f ./deployment/deployment.yml -n ${projectNamespace}"
                    sh "kubectl create -f ./deployment/service.yml -n ${projectNamespace}"
                    sh "kubectl create -f ./deployment/prometheus-service-monitor.yml -n cicd-tools"
-                   sh "kubectl create -f ./deployment/ingress.yml -n ${projectNamespace}"
+                   sh "kubectl create -f ./deployment/ingress2.yml -n ${projectNamespace}"
                    waitForRunningState(projectNamespace)
                    print "Greetings Service can be accessed at: http://greeting-service.${ingressAddress}.xip.io"
                 }
@@ -107,10 +109,11 @@ podTemplate(label: 'mypod', containers: [
                sh "kubectl create namespace prod-${projectNamespace} || true"
                sh "kubectl delete deployment greetings-service -n prod-${projectNamespace} --ignore-not-found=true"
                sh "kubectl delete service greetings-service -n prod-${projectNamespace} --ignore-not-found=true"
-               sh "kubectl delete -f ./deployment/ingress.yml -n prod-${projectNamespace} --ignore-not-found=true"
+               sed -e 's/{{INGRESSIP}}/'${ingressAddress}'/g' ./deployment/prod-ingress2.yaml > ./deployment/prod-ingress2.yaml
+               sh "kubectl delete -f ./deployment/prod-ingress2.yml -n prod-${projectNamespace} --ignore-not-found=true"
                sh "kubectl create -f ./deployment/deployment.yml -n prod-${projectNamespace}"
                sh "kubectl create -f ./deployment/service.yml -n prod-${projectNamespace}"
-               sh "kubectl create -f ./deployment/ingress.yml -n prod-${projectNamespace}"
+               sh "kubectl create -f ./deployment/prod-ingress2.yml -n prod-${projectNamespace}"
 
                waitForRunningState("prod-${projectNamespace}")
                print "Greetings Service can be accessed at: http://prod-greeting-service.${ingressAddress}.xip.io"
