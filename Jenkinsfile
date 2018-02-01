@@ -113,8 +113,7 @@ podTemplate(label: 'mypod', containers: [
                sh "kubectl create -f ./deployment/ingress.yml -n prod-${projectNamespace}"
 
                waitForRunningState("prod-${projectNamespace}")
-               printEndpoint(namespace: "prod-${projectNamespace}", serviceId: "greetings-service",
-                                   serviceName: "Greetings Service", port: "8080")
+               print "Greetings Service can be accessed at: http://prod-greeting-service.${ingressAddress}.xip.io"
             }
         }
     }
