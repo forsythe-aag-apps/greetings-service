@@ -100,30 +100,32 @@ podTemplate(label: 'mypod', containers: [
                        rocketSend channel: 'general', message: "@here Greetings Service deployed successfully at http://greetings-service.${ingressAddress}.xip.io", rawMessage: true
                     }
                 }
-
-                container('kubectl') {
-                    timeout(time: 3, unit: 'MINUTES') {
-                        input message: "Deploy to Production?"
-                    }
-                }
-
-                container('kubectl') {
-                   sh "kubectl create namespace prod-${projectNamespace} || true"
-                   sh "kubectl delete deployment greetings-service -n prod-${projectNamespace} --ignore-not-found=true"
-                   sh "kubectl delete service greetings-service -n prod-${projectNamespace} --ignore-not-found=true"
-                   sh "sed -e 's/{{INGRESSIP}}/'${ingressAddress}'/g' ./deployment/prod-ingress.yml > ./deployment/prod-ingress2.yml"
-                   sh "kubectl delete -f ./deployment/prod-ingress2.yml -n prod-${projectNamespace} --ignore-not-found=true"
-                   sh "kubectl create -f ./deployment/deployment.yml -n prod-${projectNamespace}"
-                   sh "kubectl create -f ./deployment/service.yml -n prod-${projectNamespace}"
-                   sh "kubectl create -f ./deployment/prod-ingress2.yml -n prod-${projectNamespace}"
-
-                   waitForRunningState("prod-${projectNamespace}")
-                   print "Greetings Service can be accessed at: http://prod-greetings-service.${ingressAddress}.xip.io"
-                }
             }
         } catch (all) {
             currentBuild.result = 'FAILURE'
             rocketSend channel: 'general', message: "@here Greetings Service build failed", rawMessage: true
+        }
+
+        if (!pullRequest) {
+            container('kubectl') {
+                timeout(time: 3, unit: 'MINUTES') {
+                    input message: "Deploy to Production?"
+                }
+            }
+
+            container('kubectl') {
+               sh "kubectl create namespace prod-${projectNamespace} || true"
+               sh "kubectl delete deployment greetings-service -n prod-${projectNamespace} --ignore-not-found=true"
+               sh "kubectl delete service greetings-service -n prod-${projectNamespace} --ignore-not-found=true"
+               sh "sed -e 's/{{INGRESSIP}}/'${ingressAddress}'/g' ./deployment/prod-ingress.yml > ./deployment/prod-ingress2.yml"
+               sh "kubectl delete -f ./deployment/prod-ingress2.yml -n prod-${projectNamespace} --ignore-not-found=true"
+               sh "kubectl create -f ./deployment/deployment.yml -n prod-${projectNamespace}"
+               sh "kubectl create -f ./deployment/service.yml -n prod-${projectNamespace}"
+               sh "kubectl create -f ./deployment/prod-ingress2.yml -n prod-${projectNamespace}"
+
+               waitForRunningState("prod-${projectNamespace}")
+               print "Greetings Service can be accessed at: http://prod-greetings-service.${ingressAddress}.xip.io"
+            }
         }
     }
 }
