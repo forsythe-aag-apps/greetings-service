@@ -1,0 +1,12 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: greetings-service
+spec:
+  rules:
+  - host: greetings-service.{{INGRESSIP}}.xip.io
+    http:
+      paths:
+      - backend:
+          serviceName: greetings-service
+          servicePort: 8080
