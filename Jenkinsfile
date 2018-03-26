@@ -25,7 +25,6 @@ podTemplate(label: 'mypod', containers: [
             pullRequest = true
         }
         def projectNamespace = "${env.JOB_NAME}".tokenize('/')[0]
-        def ingressAddress = System.getenv("INGRESS_CONTROLLER_IP")
 
         try {
             def accessToken = ""
@@ -58,9 +57,9 @@ podTemplate(label: 'mypod', containers: [
 
                     stage('SonarQube Analysis') {
                         if (!pullRequest) {
-                            sonarQubeScanner(accessToken, 'forsythe-aag-apps/greetings-service', "http://sonarqube.${ingressAddress}.xip.io")
+                            sonarQubeScanner(accessToken, 'forsythe-aag-apps/greetings-service', "http://sonarqube.api.cicd.siriuscloudservices.com")
                         } else {
-                            sonarQubePRScanner(accessToken, 'forsythe-aag-apps/greetings-service', "http://sonarqube.${ingressAddress}.xip.io")
+                            sonarQubePRScanner(accessToken, 'forsythe-aag-apps/greetings-service', "http://sonarqube.api.cicd.siriuscloudservices.com")
                         }
                     }
 
