@@ -91,7 +91,6 @@ podTemplate(label: 'mypod', containers: [
                        sh "kubectl delete service greetings-service -n ${projectNamespace} --ignore-not-found=true"
                        sh "kubectl delete -f ./deployment/prometheus-service-monitor.yml -n cicd-tools --ignore-not-found=true"
 
-                       sh "sed -e 's/{{INGRESSIP}}/'${ingressAddress}'/g' ./deployment/ingress.yml > ./deployment/ingress2.yml"
                        sh "kubectl delete -f ./deployment/ingress2.yml -n ${projectNamespace} --ignore-not-found=true"
                        sh "kubectl create -f ./deployment/deployment.yml -n ${projectNamespace}"
                        sh "kubectl create -f ./deployment/service.yml -n ${projectNamespace}"
@@ -99,7 +98,7 @@ podTemplate(label: 'mypod', containers: [
                        sh "kubectl create -f ./deployment/ingress2.yml -n ${projectNamespace}"
                        waitForRunningState(projectNamespace)
                        print "Greetings Service can be accessed at: http://greetings-service.${ingressAddress}.xip.io"
-                       rocketSend channel: 'general', message: "@here Greetings Service deployed successfully at http://greetings-service.${ingressAddress}.xip.io", rawMessage: true
+                       rocketSend channel: 'general', message: "@here Greetings Service deployed successfully at http://greetings-service.api.cicd.siriuscloudservices.com", rawMessage: true
                     }
                 }
             }
@@ -126,7 +125,7 @@ podTemplate(label: 'mypod', containers: [
                sh "kubectl create -f ./deployment/prod-ingress2.yml -n prod-${projectNamespace}"
 
                waitForRunningState("prod-${projectNamespace}")
-               print "Greetings Service can be accessed at: http://prod-greetings-service.${ingressAddress}.xip.io"
+               print "Greetings Service can be accessed at: http://prod-greetings-service.api.cicd.siriuscloudservices.com"
             }
         }
     }
