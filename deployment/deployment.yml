@@ -11,7 +11,7 @@ spec:
     spec:
       containers:
         - name: greetings-service
-          image: quay.io/zotovsa/greetings-service
+          image: registry.cicd.siriuscloudservices.com/library/greetings-service
           ports:
             - containerPort: 8080
               name: http

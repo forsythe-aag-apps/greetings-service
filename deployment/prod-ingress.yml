@@ -4,7 +4,7 @@ metadata:
   name: greetings-service
 spec:
   rules:
-  - host: prod-greetings-service.{{INGRESSIP}}.xip.io
+  - host: prod-greetings-service.api.cicd.siriuscloudservices.com
     http:
       paths:
       - backend:

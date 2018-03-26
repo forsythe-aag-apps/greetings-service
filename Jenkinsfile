@@ -74,10 +74,14 @@ podTemplate(label: 'mypod', containers: [
 
             if (!pullRequest) {
                 container('docker') {
-                    stage('Docker build') {
-                        sh 'docker build -t greetings-service .'
-                        sh 'docker tag greetings-service quay.io/zotovsa/greetings-service'
-                        sh 'docker push quay.io/zotovsa/greetings-service'
+                    container('docker') {
+                        stage('Docker build') {
+                            sleep 120
+                            sh "docker login --username admin --password Harbor12345 registry.cicd.siriuscloudservices.com"
+                            sh 'docker build -t greetings-service .'
+                            sh "docker tag greetings-service registry.cicd.siriuscloudservices.com/library/greetings-service"
+                            sh "docker push registry.cicd.siriuscloudservices.com/library/greetings-service"
+                        }
                     }
                 }
 
