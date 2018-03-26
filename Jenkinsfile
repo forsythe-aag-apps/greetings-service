@@ -57,9 +57,9 @@ podTemplate(label: 'mypod', containers: [
 
                     stage('SonarQube Analysis') {
                         if (!pullRequest) {
-                            sonarQubeScanner(accessToken, 'forsythe-aag-apps/greetings-service', "http://sonarqube.api.cicd.siriuscloudservices.com")
+                            sonarQubeScanner(accessToken, 'forsythe-aag-apps/greetings-service', "https://sonarqube.api.cicd.siriuscloudservices.com")
                         } else {
-                            sonarQubePRScanner(accessToken, 'forsythe-aag-apps/greetings-service', "http://sonarqube.api.cicd.siriuscloudservices.com")
+                            sonarQubePRScanner(accessToken, 'forsythe-aag-apps/greetings-service', "https://sonarqube.api.cicd.siriuscloudservices.com")
                         }
                     }
 
