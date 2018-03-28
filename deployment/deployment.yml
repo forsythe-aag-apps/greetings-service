@@ -12,6 +12,8 @@ spec:
       containers:
         - name: greetings-service
           image: registry.cicd.siriuscloudservices.com/library/greetings-service
+          imagePullSecrets:
+          - name: regsecret
           ports:
             - containerPort: 8080
               name: http
