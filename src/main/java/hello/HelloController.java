@@ -36,4 +36,16 @@ public class HelloController {
     public String getUser() {
         return "John Doe";
     }
+
+    public Object clone() {
+        return null;
+    }
+
+    public int compareTo(Object value) {
+        if (value == null) {
+            return Integer.MIN_VALUE;
+        }
+
+        return 0;
+    }
 }
