@@ -11,7 +11,7 @@ spec:
     spec:
       containers:
         - name: greetings-service
-          image: quay.io/zotovsa/greetings-service
+          image: registry.cicd.siriuscloudservices.com/library/greetings-service
           ports:
             - containerPort: 8080
               name: http
@@ -21,3 +21,6 @@ spec:
               port: 8080
             initialDelaySeconds: 30
             timeoutSeconds: 30
+      imagePullSecrets:
+        - name: regsecret
+
