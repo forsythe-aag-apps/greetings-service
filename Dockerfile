@@ -4,4 +4,4 @@ VOLUME /tmp
 ENTRYPOINT ["java","-Dspring.profiles.active=dev", "-jar","/app.jar"]
 ADD ./target/greetings-service-1.0.0-SNAPSHOT.jar /app.jar
 RUN sh -c 'touch /app.jar'
-EXPOSE 8080
+EXPOSE 8080 9090
