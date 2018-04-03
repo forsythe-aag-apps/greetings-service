@@ -21,7 +21,7 @@ podTemplate(label: 'mypod', containers: [
     node('mypod') {
         try {
             checkout scm
-            def jobName = "${env.JOB_NAME}".tokenize('/').last()
+            def jobName = "${env.JOB_NAME}".tokenize('/').last() + 'test'
             def projectNamespace = "${env.JOB_NAME}".tokenize('/')[0]
             def ingressAddress = System.getenv("INGRESS_CONTROLLER_IP")
             def accessToken = ""
