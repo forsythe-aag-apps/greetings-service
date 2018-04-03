@@ -18,15 +18,11 @@ podTemplate(label: 'mypod', containers: [
   ], imagePullSecrets: [ 'regsecret' ]) {
 
     node('mypod') {
-        checkout scm
-        def jobName = "${env.JOB_NAME}".tokenize('/').last()
-        def pullRequest = false
-        if (jobName.startsWith("PR-")) {
-            pullRequest = true
-        }
-        def projectNamespace = "${env.JOB_NAME}".tokenize('/')[0]
-
         try {
+            checkout scm
+            def jobName = "${env.JOB_NAME}".tokenize('/').last() + 'test'
+            def projectNamespace = "${env.JOB_NAME}".tokenize('/')[0]
+            def ingressAddress = System.getenv("INGRESS_CONTROLLER_IP")
             def accessToken = ""
 
             withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'github-token', usernameVariable: 'USERNAME', passwordVariable: 'GITHUB_ACCESS_TOKEN']]) {
