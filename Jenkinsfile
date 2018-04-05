@@ -18,6 +18,7 @@ podTemplate(label: 'mypod', containers: [
   ], imagePullSecrets: [ 'regsecret' ]) {
 
     node('mypod') {
+        rocketSend channel: 'general', message: "@here Greetings Service build started", rawMessage: true
         checkout scm
         def jobName = "${env.JOB_NAME}".tokenize('/').last()
         def pullRequest = false
