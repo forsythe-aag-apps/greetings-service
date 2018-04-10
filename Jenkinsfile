@@ -77,7 +77,6 @@ podTemplate(label: 'mypod', containers: [
                 container('docker') {
                     container('docker') {
                         stage('Docker build') {
-                            sleep 120
                             sh 'docker build -t greetings-service .'
                             sh "docker tag greetings-service registry.cicd.siriuscloudservices.com/library/greetings-service"
                             sh "docker push registry.cicd.siriuscloudservices.com/library/greetings-service"
