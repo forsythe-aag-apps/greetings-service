@@ -25,8 +25,8 @@ podTemplate(label: 'mypod', containers: [
         if (jobName.startsWith("PR-")) {
             pullRequest = true
         }
-        def projectNamespace = "${env.JOB_NAME}".tokenize('/')[0]
-        def serviceName = jobName
+        def serviceName = "${env.JOB_NAME}".tokenize('/')[0]
+        def projectNamespace = serviceName
 
         try {
             def accessToken = ""
