@@ -88,20 +88,22 @@ podTemplate(label: 'mypod', containers: [
 
                 container('kubectl') {
                     stage('Deploy MicroService') {
-                       sed -e 's/{{SERVICE_NAME}}/'$jobName'/g' ./deployment/deployment.yml  > ./deployment/deployment2.yml
-                       sed -e 's/{{SERVICE_NAME}}/'$jobName'/g' ./deployment/service.yml  > ./deployment/service2.yml
-                       sed -e 's/{{SERVICE_NAME}}/'$jobName'/g' ./deployment/prometheus-service-monitor.yml  > ./deployment/prometheus-service-monitor2.yml
-                       sed -e 's/{{SERVICE_NAME}}/'$jobName'/g' ./deployment/ingress.yml  > ./deployment/ingress2.yml
+                       sh """
+                           sed -e 's/{{SERVICE_NAME}}/'$jobName'/g' ./deployment/deployment.yml  > ./deployment/deployment2.yml
+                           sed -e 's/{{SERVICE_NAME}}/'$jobName'/g' ./deployment/service.yml  > ./deployment/service2.yml
+                           sed -e 's/{{SERVICE_NAME}}/'$jobName'/g' ./deployment/prometheus-service-monitor.yml  > ./deployment/prometheus-service-monitor2.yml
+                           sed -e 's/{{SERVICE_NAME}}/'$jobName'/g' ./deployment/ingress.yml  > ./deployment/ingress2.yml
 
-                       sh "kubectl delete -f ./deployment/deployment2.yml -n ${projectNamespace} --ignore-not-found=true"
-                       sh "kubectl delete -f ./deployment/service2.yml -n ${projectNamespace} --ignore-not-found=true"
-                       sh "kubectl delete -f ./deployment/prometheus-service-monitor2.yml -n cicd-tools --ignore-not-found=true"
-                       sh "kubectl delete -f ./deployment/ingress2.yml -n ${projectNamespace} --ignore-not-found=true"
+                           kubectl delete -f ./deployment/deployment2.yml -n ${projectNamespace} --ignore-not-found=true
+                           kubectl delete -f ./deployment/service2.yml -n ${projectNamespace} --ignore-not-found=true
+                           kubectl delete -f ./deployment/prometheus-service-monitor2.yml -n cicd-tools --ignore-not-found=true
+                           kubectl delete -f ./deployment/ingress2.yml -n ${projectNamespace} --ignore-not-found=true
 
-                       sh "kubectl create -f ./deployment/deployment2.yml -n ${projectNamespace}"
-                       sh "kubectl create -f ./deployment/service2.yml -n ${projectNamespace}"
-                       sh "kubectl create -f ./deployment/prometheus-service-monitor2.yml -n cicd-tools"
-                       sh "kubectl create -f ./deployment/ingress2.yml -n ${projectNamespace}"
+                           kubectl create -f ./deployment/deployment2.yml -n ${projectNamespace}
+                           kubectl create -f ./deployment/service2.yml -n ${projectNamespace}
+                           kubectl create -f ./deployment/prometheus-service-monitor2.yml -n cicd-tools
+                           kubectl create -f ./deployment/ingress2.yml -n ${projectNamespace}
+                       """
 
                        waitForRunningState(projectNamespace)
                        print "${serviceName} can be accessed at: http://${serviceName}.api.cicd.siriuscloudservices.com"
@@ -125,20 +127,22 @@ podTemplate(label: 'mypod', containers: [
             container('kubectl') {
                serviceName = "prod-${serviceName}"
                projectNamespace = "prod-${serviceName}"
-               sed -e 's/{{SERVICE_NAME}}/'$jobName'/g' ./deployment/deployment.yml  > ./deployment/deployment2.yml
-               sed -e 's/{{SERVICE_NAME}}/'$jobName'/g' ./deployment/service.yml  > ./deployment/service2.yml
-               sed -e 's/{{SERVICE_NAME}}/'$jobName'/g' ./deployment/prometheus-service-monitor.yml  > ./deployment/prometheus-service-monitor2.yml
-               sed -e 's/{{SERVICE_NAME}}/'$jobName'/g' ./deployment/ingress.yml  > ./deployment/ingress2.yml
+               sh """
+                   sed -e 's/{{SERVICE_NAME}}/'$jobName'/g' ./deployment/deployment.yml  > ./deployment/deployment2.yml
+                   sed -e 's/{{SERVICE_NAME}}/'$jobName'/g' ./deployment/service.yml  > ./deployment/service2.yml
+                   sed -e 's/{{SERVICE_NAME}}/'$jobName'/g' ./deployment/prometheus-service-monitor.yml  > ./deployment/prometheus-service-monitor2.yml
+                   sed -e 's/{{SERVICE_NAME}}/'$jobName'/g' ./deployment/ingress.yml  > ./deployment/ingress2.yml
 
-               sh "kubectl delete -f ./deployment/deployment2.yml -n ${projectNamespace} --ignore-not-found=true"
-               sh "kubectl delete -f ./deployment/service2.yml -n ${projectNamespace} --ignore-not-found=true"
-               sh "kubectl delete -f ./deployment/prometheus-service-monitor2.yml -n cicd-tools --ignore-not-found=true"
-               sh "kubectl delete -f ./deployment/ingress2.yml -n ${projectNamespace} --ignore-not-found=true"
+                   kubectl delete -f ./deployment/deployment2.yml -n ${projectNamespace} --ignore-not-found=true
+                   kubectl delete -f ./deployment/service2.yml -n ${projectNamespace} --ignore-not-found=true
+                   kubectl delete -f ./deployment/prometheus-service-monitor2.yml -n cicd-tools --ignore-not-found=true
+                   kubectl delete -f ./deployment/ingress2.yml -n ${projectNamespace} --ignore-not-found=true
 
-               sh "kubectl create -f ./deployment/deployment2.yml -n ${projectNamespace}"
-               sh "kubectl create -f ./deployment/service2.yml -n ${projectNamespace}"
-               sh "kubectl create -f ./deployment/prometheus-service-monitor2.yml -n cicd-tools"
-               sh "kubectl create -f ./deployment/ingress2.yml -n ${projectNamespace}"
+                   kubectl create -f ./deployment/deployment2.yml -n ${projectNamespace}
+                   kubectl create -f ./deployment/service2.yml -n ${projectNamespace}
+                   kubectl create -f ./deployment/prometheus-service-monitor2.yml -n cicd-tools
+                   kubectl create -f ./deployment/ingress2.yml -n ${projectNamespace}
+               """
 
                waitForRunningState(projectNamespace)
                print "${serviceName} can be accessed at: http://prod-${serviceName}.api.cicd.siriuscloudservices.com"
