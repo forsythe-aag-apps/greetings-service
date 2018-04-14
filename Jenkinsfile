@@ -126,7 +126,7 @@ podTemplate(label: 'mypod', containers: [
 
             container('kubectl') {
                serviceName = "prod-${serviceName}"
-               projectNamespace = "prod-${serviceName}"
+               projectNamespace = serviceName
                sh """
                    sed -e 's/{{SERVICE_NAME}}/'$jobName'/g' ./deployment/deployment.yml  > ./deployment/deployment2.yml
                    sed -e 's/{{SERVICE_NAME}}/'$jobName'/g' ./deployment/service.yml  > ./deployment/service2.yml
@@ -145,7 +145,7 @@ podTemplate(label: 'mypod', containers: [
                """
 
                waitForRunningState(projectNamespace)
-               print "${serviceName} can be accessed at: http://prod-${serviceName}.api.cicd.siriuscloudservices.com"
+               print "${serviceName} can be accessed at: http://${serviceName}.api.cicd.siriuscloudservices.com"
             }
         }
     }
