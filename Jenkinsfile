@@ -19,14 +19,15 @@ podTemplate(label: 'mypod', containers: [
 
     node('mypod') {
         def jobName = "${env.JOB_NAME}".tokenize('/').last()
-        rocketSend channel: 'jenkins', message: "@here ${jobName} build started", rawMessage: true
+        def serviceName = "${env.JOB_NAME}".tokenize('/')[0]
+        def projectNamespace = serviceName
+
+        rocketSend channel: 'jenkins', message: "@here ${serviceName} build started", rawMessage: true
         checkout scm
         def pullRequest = false
         if (jobName.startsWith("PR-")) {
             pullRequest = true
         }
-        def serviceName = "${env.JOB_NAME}".tokenize('/')[0]
-        def projectNamespace = serviceName
 
         try {
             def accessToken = ""
@@ -145,6 +146,7 @@ podTemplate(label: 'mypod', containers: [
                """
 
                waitForRunningState(projectNamespace)
+               rocketSend channel: 'jenkins', message: "@here ${serviceName} deployed successfully at http://${serviceName}.api.cicd.siriuscloudservices.com", rawMessage: true
                print "${serviceName} can be accessed at: http://${serviceName}.api.cicd.siriuscloudservices.com"
             }
         }
