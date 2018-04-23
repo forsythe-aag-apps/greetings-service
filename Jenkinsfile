@@ -90,10 +90,10 @@ podTemplate(label: 'mypod', containers: [
                 container('kubectl') {
                     stage('Deploy MicroService') {
                        sh """
-                           sed -e 's/{{SERVICE_NAME}}/'$jobName'/g' ./deployment/deployment.yml  > ./deployment/deployment2.yml
-                           sed -e 's/{{SERVICE_NAME}}/'$jobName'/g' ./deployment/service.yml  > ./deployment/service2.yml
-                           sed -e 's/{{SERVICE_NAME}}/'$jobName'/g' ./deployment/prometheus-service-monitor.yml  > ./deployment/prometheus-service-monitor2.yml
-                           sed -e 's/{{SERVICE_NAME}}/'$jobName'/g' ./deployment/ingress.yml  > ./deployment/ingress2.yml
+                           sed -e 's/{{SERVICE_NAME}}/'$serviceName'/g' ./deployment/deployment.yml  > ./deployment/deployment2.yml
+                           sed -e 's/{{SERVICE_NAME}}/'$serviceName'/g' ./deployment/service.yml  > ./deployment/service2.yml
+                           sed -e 's/{{SERVICE_NAME}}/'$serviceName'/g' ./deployment/prometheus-service-monitor.yml  > ./deployment/prometheus-service-monitor2.yml
+                           sed -e 's/{{SERVICE_NAME}}/'$serviceName'/g' ./deployment/ingress.yml  > ./deployment/ingress2.yml
 
                            kubectl delete -f ./deployment/deployment2.yml -n ${projectNamespace} --ignore-not-found=true
                            kubectl delete -f ./deployment/service2.yml -n ${projectNamespace} --ignore-not-found=true
@@ -129,10 +129,10 @@ podTemplate(label: 'mypod', containers: [
                serviceName = "prod-${serviceName}"
                projectNamespace = serviceName
                sh """
-                   sed -e 's/{{SERVICE_NAME}}/'$jobName'/g' ./deployment/deployment.yml  > ./deployment/deployment2.yml
-                   sed -e 's/{{SERVICE_NAME}}/'$jobName'/g' ./deployment/service.yml  > ./deployment/service2.yml
-                   sed -e 's/{{SERVICE_NAME}}/'$jobName'/g' ./deployment/prometheus-service-monitor.yml  > ./deployment/prometheus-service-monitor2.yml
-                   sed -e 's/{{SERVICE_NAME}}/'$jobName'/g' ./deployment/ingress.yml  > ./deployment/ingress2.yml
+                   sed -e 's/{{SERVICE_NAME}}/'$serviceName'/g' ./deployment/deployment.yml  > ./deployment/deployment2.yml
+                   sed -e 's/{{SERVICE_NAME}}/'$serviceName'/g' ./deployment/service.yml  > ./deployment/service2.yml
+                   sed -e 's/{{SERVICE_NAME}}/'$serviceName'/g' ./deployment/prometheus-service-monitor.yml  > ./deployment/prometheus-service-monitor2.yml
+                   sed -e 's/{{SERVICE_NAME}}/'$serviceName'/g' ./deployment/ingress.yml  > ./deployment/ingress2.yml
 
                    kubectl delete -f ./deployment/deployment2.yml -n ${projectNamespace} --ignore-not-found=true
                    kubectl delete -f ./deployment/service2.yml -n ${projectNamespace} --ignore-not-found=true
