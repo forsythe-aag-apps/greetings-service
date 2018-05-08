@@ -12,7 +12,8 @@ import java.text.MessageFormat;
 
 @RestController
 @Timed
-public class HelloController {
+public class HelloController implements Comparable {
+    public static String FOO_VAR = "";
 
     @Value("${templates.index}")
     private String indexTemplate;
@@ -35,5 +36,17 @@ public class HelloController {
     @RequestMapping("/user")
     public String getUser() {
         return "John Doe";
+    }
+    
+    public Object clone() {
+        return null;
+    }
+
+    public int compareTo(Object value) {
+        if (value == null) {
+            return Integer.MIN_VALUE;
+        }
+
+        return 0;
     }
 }
