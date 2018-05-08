@@ -62,9 +62,9 @@ podTemplate(label: 'mypod', containers: [
 
                     stage('SonarQube Analysis') {
                         if (!pullRequest) {
-                            sonarQubeScanner(accessToken, 'forsythe-aag-apps/${serviceName}', "https://sonarqube.api.cicd.siriuscloudservices.com")
+                            sonarQubeScanner(accessToken, "forsythe-aag-apps/${serviceName}", "https://sonarqube.api.cicd.siriuscloudservices.com")
                         } else {
-                            sonarQubePRScanner(accessToken, 'forsythe-aag-apps/${serviceName}', "https://sonarqube.api.cicd.siriuscloudservices.com")
+                            sonarQubePRScanner(accessToken, "forsythe-aag-apps/${serviceName}", "https://sonarqube.api.cicd.siriuscloudservices.com")
                         }
                     }
 
@@ -150,7 +150,7 @@ podTemplate(label: 'mypod', containers: [
                """
 
                waitForRunningState(projectNamespace)
-               sleep 30
+               sleep 60
                rocketSend channel: 'jenkins', message: "@here ${serviceName} deployed successfully at http://${serviceName}.api.cicd.siriuscloudservices.com", rawMessage: true
                print "${serviceName} can be accessed at: http://${serviceName}.api.cicd.siriuscloudservices.com"
             }
