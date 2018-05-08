@@ -1,17 +1,17 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: greetings-service
+  name: {{SERVICE_NAME}}
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        app: greetings-service
+        app: {{SERVICE_NAME}}
     spec:
       containers:
-        - name: greetings-service
-          image: registry.cicd.siriuscloudservices.com/library/greetings-service
+        - name: {{SERVICE_NAME}}
+          image: registry.api.cicd.siriuscloudservices.com/library/{{REPOSITORY_NAME}}
           ports:
             - containerPort: 8080
               name: http

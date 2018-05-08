@@ -18,14 +18,17 @@ podTemplate(label: 'mypod', containers: [
   ], imagePullSecrets: [ 'regsecret' ]) {
 
     node('mypod') {
-        rocketSend channel: 'general', message: "@here Greetings Service build started", rawMessage: true
-        checkout scm
         def jobName = "${env.JOB_NAME}".tokenize('/').last()
+        def serviceName = "${env.JOB_NAME}".tokenize('/')[0]
+        def projectNamespace = serviceName
+        def repositoryName = serviceName
+
+        rocketSend channel: 'jenkins', message: "@here ${serviceName} build started", rawMessage: true
+        checkout scm
         def pullRequest = false
         if (jobName.startsWith("PR-")) {
             pullRequest = true
         }
-        def projectNamespace = "${env.JOB_NAME}".tokenize('/')[0]
 
         try {
             def accessToken = ""
@@ -37,6 +40,7 @@ podTemplate(label: 'mypod', containers: [
             if (!pullRequest) {
                 container('kubectl') {
                     stage('Configure Kubernetes') {
+                        sleep 30
                         createNamespace(projectNamespace)
                     }
                 }
@@ -58,9 +62,9 @@ podTemplate(label: 'mypod', containers: [
 
                     stage('SonarQube Analysis') {
                         if (!pullRequest) {
-                            sonarQubeScanner(accessToken, 'forsythe-aag-apps/greetings-service', "https://sonarqube.api.cicd.siriuscloudservices.com")
+                            sonarQubeScanner(accessToken, 'forsythe-aag-apps/${serviceName}', "https://sonarqube.api.cicd.siriuscloudservices.com")
                         } else {
-                            sonarQubePRScanner(accessToken, 'forsythe-aag-apps/greetings-service', "https://sonarqube.api.cicd.siriuscloudservices.com")
+                            sonarQubePRScanner(accessToken, 'forsythe-aag-apps/${serviceName}', "https://sonarqube.api.cicd.siriuscloudservices.com")
                         }
                     }
 
@@ -78,53 +82,77 @@ podTemplate(label: 'mypod', containers: [
                     container('docker') {
                         stage('Docker build') {
                             sleep 120
-                            sh 'docker build -t greetings-service .'
-                            sh "docker tag greetings-service registry.cicd.siriuscloudservices.com/library/greetings-service"
-                            sh "docker push registry.cicd.siriuscloudservices.com/library/greetings-service"
+                            sh "docker build -t ${serviceName} ."
+                            sh "docker tag ${serviceName} registry.api.cicd.siriuscloudservices.com/library/${repositoryName}"
+                            sh "docker push registry.api.cicd.siriuscloudservices.com/library/${repositoryName}"
                         }
                     }
                 }
 
                 container('kubectl') {
                     stage('Deploy MicroService') {
-                       sh "kubectl delete deployment greetings-service -n ${projectNamespace} --ignore-not-found=true"
-                       sh "kubectl delete service greetings-service -n ${projectNamespace} --ignore-not-found=true"
-                       sh "kubectl delete -f ./deployment/prometheus-service-monitor.yml -n cicd-tools --ignore-not-found=true"
+                       sh """
+                           sed -e 's/{{SERVICE_NAME}}/'$serviceName'/g' ./deployment/deployment.yml | sed -e 's/{{REPOSITORY_NAME}}/'$repositoryName'/g' > ./deployment/deployment2.yml
+                           sed -e 's/{{SERVICE_NAME}}/'$serviceName'/g' ./deployment/service.yml  > ./deployment/service2.yml
+                           sed -e 's/{{SERVICE_NAME}}/'$serviceName'/g' ./deployment/prometheus-service-monitor.yml  > ./deployment/prometheus-service-monitor2.yml
+                           sed -e 's/{{SERVICE_NAME}}/'$serviceName'/g' ./deployment/ingress.yml  > ./deployment/ingress2.yml
 
-                       sh "kubectl delete -f ./deployment/ingress.yml -n ${projectNamespace} --ignore-not-found=true"
-                       sh "kubectl create -f ./deployment/deployment.yml -n ${projectNamespace}"
-                       sh "kubectl create -f ./deployment/service.yml -n ${projectNamespace}"
-                       sh "kubectl create -f ./deployment/prometheus-service-monitor.yml -n cicd-tools"
-                       sh "kubectl create -f ./deployment/ingress.yml -n ${projectNamespace}"
+                           kubectl delete -f ./deployment/deployment2.yml -n ${projectNamespace} --ignore-not-found=true
+                           kubectl delete -f ./deployment/service2.yml -n ${projectNamespace} --ignore-not-found=true
+                           kubectl delete -f ./deployment/prometheus-service-monitor2.yml -n cicd-tools --ignore-not-found=true
+                           kubectl delete -f ./deployment/ingress2.yml -n ${projectNamespace} --ignore-not-found=true
+
+                           kubectl create -f ./deployment/deployment2.yml -n ${projectNamespace}
+                           kubectl create -f ./deployment/service2.yml -n ${projectNamespace}
+                           kubectl create -f ./deployment/prometheus-service-monitor2.yml -n cicd-tools
+                           kubectl create -f ./deployment/ingress2.yml -n ${projectNamespace}
+                       """
+
                        waitForRunningState(projectNamespace)
-                       print "Greetings Service can be accessed at: http://greetings-service.api.cicd.siriuscloudservices.com"
-                       rocketSend channel: 'general', message: "@here Greetings Service deployed successfully at http://greetings-service.api.cicd.siriuscloudservices.com", rawMessage: true
+                       sleep 30
+                       print "${serviceName} can be accessed at: http://${serviceName}.api.cicd.siriuscloudservices.com"
+                       rocketSend channel: 'jenkins', message: "@here ${serviceName} deployed successfully at http://${serviceName}.api.cicd.siriuscloudservices.com", rawMessage: true
                     }
                 }
             }
         } catch (all) {
             currentBuild.result = 'FAILURE'
-            rocketSend channel: 'general', message: "@here Greetings Service build failed", rawMessage: true
+            rocketSend channel: 'jenkins', message: "@here ${serviceName} build failed", rawMessage: true
         }
 
         if (!pullRequest) {
             container('kubectl') {
                 timeout(time: 3, unit: 'MINUTES') {
+                    rocketSend channel: 'jenkins', message: "@here ${serviceName} - waiting approval. [Click here](${env.JENKINS_URL}/blue/organizations/jenkins/${serviceName}/detail/master/${env.BUILD_NUMBER}/pipeline)", rawMessage: true
                     input message: "Deploy to Production?"
                 }
             }
 
             container('kubectl') {
-               sh "kubectl create namespace prod-${projectNamespace} || true"
-               sh "kubectl delete deployment greetings-service -n prod-${projectNamespace} --ignore-not-found=true"
-               sh "kubectl delete service greetings-service -n prod-${projectNamespace} --ignore-not-found=true"
-               sh "kubectl delete -f ./deployment/prod-ingress.yml -n prod-${projectNamespace} --ignore-not-found=true"
-               sh "kubectl create -f ./deployment/deployment.yml -n prod-${projectNamespace}"
-               sh "kubectl create -f ./deployment/service.yml -n prod-${projectNamespace}"
-               sh "kubectl create -f ./deployment/prod-ingress.yml -n prod-${projectNamespace}"
+               serviceName = "prod-${serviceName}"
+               projectNamespace = serviceName
+               sh """
+                   kubectl create namespace ${projectNamespace} || true
+                   sed -e 's/{{SERVICE_NAME}}/'$serviceName'/g' ./deployment/deployment.yml | sed -e 's/{{REPOSITORY_NAME}}/'$repositoryName'/g' > ./deployment/deployment2.yml
+                   sed -e 's/{{SERVICE_NAME}}/'$serviceName'/g' ./deployment/service.yml  > ./deployment/service2.yml
+                   sed -e 's/{{SERVICE_NAME}}/'$serviceName'/g' ./deployment/prometheus-service-monitor.yml  > ./deployment/prometheus-service-monitor2.yml
+                   sed -e 's/{{SERVICE_NAME}}/'$serviceName'/g' ./deployment/ingress.yml  > ./deployment/ingress2.yml
 
-               waitForRunningState("prod-${projectNamespace}")
-               print "Greetings Service can be accessed at: http://prod-greetings-service.api.cicd.siriuscloudservices.com"
+                   kubectl delete -f ./deployment/deployment2.yml -n ${projectNamespace} --ignore-not-found=true
+                   kubectl delete -f ./deployment/service2.yml -n ${projectNamespace} --ignore-not-found=true
+                   kubectl delete -f ./deployment/prometheus-service-monitor2.yml -n cicd-tools --ignore-not-found=true
+                   kubectl delete -f ./deployment/ingress2.yml -n ${projectNamespace} --ignore-not-found=true
+
+                   kubectl create -f ./deployment/deployment2.yml -n ${projectNamespace}
+                   kubectl create -f ./deployment/service2.yml -n ${projectNamespace}
+                   kubectl create -f ./deployment/prometheus-service-monitor2.yml -n cicd-tools
+                   kubectl create -f ./deployment/ingress2.yml -n ${projectNamespace}
+               """
+
+               waitForRunningState(projectNamespace)
+               sleep 30
+               rocketSend channel: 'jenkins', message: "@here ${serviceName} deployed successfully at http://${serviceName}.api.cicd.siriuscloudservices.com", rawMessage: true
+               print "${serviceName} can be accessed at: http://${serviceName}.api.cicd.siriuscloudservices.com"
             }
         }
     }

@@ -1,16 +1,16 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: greetings-service
+  name: {{SERVICE_NAME}}
   labels:
     team: frontend
 spec:
   selector:
     matchLabels:
-      app: greetings-service
+      app: {{SERVICE_NAME}}
   namespaceSelector:
     matchNames:
-    - "greetings-service"
+    - "{{SERVICE_NAME}}"
   endpoints:
   - port: http
     path: /prometheus
