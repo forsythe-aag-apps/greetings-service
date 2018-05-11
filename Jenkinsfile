@@ -19,6 +19,7 @@ podTemplate(label: 'mypod', containers: [
 
     node('mypod') {
         def jobName = "${env.JOB_NAME}".tokenize('/').last()
+        def branchName = jobName
         def serviceName = "${env.JOB_NAME}".tokenize('/')[0]
         def projectNamespace = serviceName
         def repositoryName = serviceName
@@ -30,6 +31,11 @@ podTemplate(label: 'mypod', containers: [
             pullRequest = true
         }
 
+        def featureBranch = false
+        if (branchName != "master") {
+            featureBranch = true
+        }
+
         try {
             def accessToken = ""
 
@@ -37,7 +43,7 @@ podTemplate(label: 'mypod', containers: [
               accessToken = sh(returnStdout: true, script: 'echo $GITHUB_ACCESS_TOKEN').trim()
             }
 
-            if (!pullRequest) {
+            if (!pullRequest && !featureBranch) {
                 container('kubectl') {
                     stage('Configure Kubernetes') {
                         sleep 30
@@ -61,14 +67,14 @@ podTemplate(label: 'mypod', containers: [
                     }
 
                     stage('SonarQube Analysis') {
-                        if (!pullRequest) {
-                            sonarQubeScanner(accessToken, "forsythe-aag-apps/${serviceName}", "https://sonarqube.api.cicd.siriuscloudservices.com")
+                        if (!pullRequest && !featureBranch) {
+                            sonarQubeScanner(accessToken, "forsythe-aag-apps/${serviceName}", "https://sonarqube.api.cicd.siriuscloudservices.com", branchName)
                         } else {
                             sonarQubePRScanner(accessToken, "forsythe-aag-apps/${serviceName}", "https://sonarqube.api.cicd.siriuscloudservices.com")
                         }
                     }
 
-                    if (!pullRequest) {
+                    if (!pullRequest && !featureBranch) {
                         stage('Deploy project to Nexus') {
                             sh 'mvn -DskipTests=true package deploy'
                             archiveArtifacts artifacts: 'target/*.jar'
@@ -77,7 +83,7 @@ podTemplate(label: 'mypod', containers: [
                 }
             }
 
-            if (!pullRequest) {
+            if (!pullRequest && !featureBranch) {
                 container('docker') {
                     container('docker') {
                         stage('Docker build') {
