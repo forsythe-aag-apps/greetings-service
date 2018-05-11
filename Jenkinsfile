@@ -32,7 +32,7 @@ podTemplate(label: 'mypod', containers: [
         }
 
         def featureBranch = false
-        if (branchName != "master") {
+        if (!branchName.equals("master")) {
             featureBranch = true
         }
 
