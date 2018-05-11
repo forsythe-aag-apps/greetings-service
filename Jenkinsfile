@@ -67,7 +67,7 @@ podTemplate(label: 'mypod', containers: [
                     }
 
                     stage('SonarQube Analysis') {
-                        if (!pullRequest && !featureBranch) {
+                        if (!pullRequest) {
                             sonarQubeScanner(accessToken, "forsythe-aag-apps/${serviceName}", "https://sonarqube.api.cicd.siriuscloudservices.com", branchName)
                         } else {
                             sonarQubePRScanner(accessToken, "forsythe-aag-apps/${serviceName}", "https://sonarqube.api.cicd.siriuscloudservices.com")
