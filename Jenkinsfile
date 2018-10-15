@@ -19,7 +19,7 @@ podTemplate(label: 'mypod', containers: [
 
     node('mypod') {
         def jobName = "${env.JOB_NAME}".tokenize('/').last()
-        def branchName = jobName
+        def branchName = jobName.replace("%2F", "/")
         def serviceName = "${env.JOB_NAME}".tokenize('/')[0]
         def projectNamespace = serviceName
         def repositoryName = serviceName
@@ -126,7 +126,7 @@ podTemplate(label: 'mypod', containers: [
             rocketSend channel: 'jenkins', message: "@here ${serviceName} build failed", rawMessage: true
         }
 
-        if (!pullRequest) {
+        if (!pullRequest && !featureBranch) {
             container('kubectl') {
                 timeout(time: 3, unit: 'MINUTES') {
                     rocketSend channel: 'jenkins', message: "@here ${serviceName} - waiting approval. [Click here](${env.JENKINS_URL}/blue/organizations/jenkins/${serviceName}/detail/master/${env.BUILD_NUMBER}/pipeline)", rawMessage: true
